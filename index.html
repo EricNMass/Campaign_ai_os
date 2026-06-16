@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Match | Executive AI Forge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --dichroic-primary: #6366f1;
+        --dichroic-secondary: #ec4899;
+        --dichroic-accent: #14b8a6;
+      }
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: #020617;
+        overflow-x: hidden;
+        color: #f8fafc;
+      }
+      .mono { font-family: 'JetBrains Mono', monospace; }
+      
+      /* Dichroic Background Mesh */
+      .dichroic-mesh {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: radial-gradient(circle at 0% 0%, #1e1b4b 0%, transparent 50%),
+                    radial-gradient(circle at 100% 100%, #312e81 0%, transparent 50%),
+                    radial-gradient(circle at 100% 0%, #4c1d95 0%, transparent 50%),
+                    radial-gradient(circle at 0% 100%, #1e1b4b 0%, transparent 50%);
+        opacity: 0.6;
+      }
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      }
+
+      .hologram-glow {
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.2), inset 0 0 20px rgba(99, 102, 241, 0.1);
+      }
+
+      .interactive-hover:hover {
+        transform: translateY(-2px) scale(1.01);
+        border-color: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .scanline {
+        width: 100%;
+        height: 100px;
+        z-index: 10;
+        background: linear-gradient(to bottom, transparent, rgba(99, 102, 241, 0.1), transparent);
+        position: absolute;
+        animation: scan 3s linear infinite;
+        pointer-events: none;
+      }
+
+      @keyframes scan {
+        from { top: -100px; }
+        to { top: 100%; }
+      }
+
+      .text-gradient {
+        background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div class="dichroic-mesh" id="mesh-bg"></div>
+    <canvas id="particle-canvas" style="position:fixed; top:0; left:0; pointer-events:none; z-index:0;"></canvas>
+    <div id="root"></div>
+
+    <script>
+      // Interactive Particle System
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      let mouse = { x: 0, y: 0 };
+
+      window.addEventListener('resize', resize);
+      window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      class Particle {
+        constructor() {
+          this.init();
+        }
+        init() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 2;
+          this.speedX = (Math.random() - 0.5) * 0.5;
+          this.speedY = (Math.random() - 0.5) * 0.5;
+          this.color = `rgba(255, 255, 255, ${Math.random() * 0.3})`;
+        }
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          
+          const dx = mouse.x - this.x;
+          const dy = mouse.y - this.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if(dist < 200) {
+            this.x += dx * 0.01;
+            this.y += dy * 0.01;
+          }
+
+          if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.init();
+        }
+        draw() {
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function initParticles() {
+        particles = [];
+        for(let i=0; i<100; i++) particles.push(new Particle());
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+      }
+
+      resize();
+      initParticles();
+      animate();
+    </script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
