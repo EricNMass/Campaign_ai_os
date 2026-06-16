@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { apiService } from '../services/apiService';
+import { apiService, getUrl } from '../services/apiService';
 import { Report, Campaign } from '../types';
 
 const ReportsView: React.FC = () => {
@@ -21,7 +21,7 @@ const ReportsView: React.FC = () => {
       // Wait, getReports on campaignId requires campaignId. Let's see:
       // Does our API support fetching all reports if campaignId is not supplied?
       // Yes, we implemented list_all_reports in backend/app/api/reports.py. Let's call that directly!
-      const res = await fetch('/api/reports', {
+      const res = await fetch(getUrl('/api/reports'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('campaign_os_token')}`
         }
@@ -92,7 +92,7 @@ const ReportsView: React.FC = () => {
                   <td class="px-6 py-4 text-slate-400">{new Date(r.created_at).toLocaleString()}</td>
                   <td class="px-6 py-4 text-right">
                     <a
-                      href={`/api/reports/${r.id}/download`}
+                      href={getUrl(`/api/reports/${r.id}/download`)}
                       download
                       className="px-3 py-1.5 bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/20 text-indigo-400 hover:text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors inline-block"
                     >
