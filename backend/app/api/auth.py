@@ -1,7 +1,7 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from backend.app.auth import verify_password, create_access_token, MOCK_USERS_DB
+from backend.app.auth import verify_password, create_access_token, MOCK_USERS_DB, get_current_user
 from backend.app.schemas import Token, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -26,6 +26,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     }
 
 @router.get("/me", response_model=UserResponse)
-async def read_users_me(current_user: dict = Depends(verify_password)):
+async def read_users_me(current_user: dict = Depends(get_current_user)):
     # Handled by dependency injection
     return current_user
